@@ -3,45 +3,33 @@ package com.example.wastemanagementapp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.wastemanagementapp.ui.theme.WasteManagementAppTheme
+import java.util.UUID
 
 class MainActivity : ComponentActivity() {
+private lateinit var database: LeaderboardDatabase
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+
+        database = LeaderboardDatabase.getDatabase(this)
+        var userId = getUserId()
+
         setContent {
-            WasteManagementAppTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
-            }
+            ScoreSubmissionScreen(
+                userId = userId,
+                database = database
+            )
         }
+
     }
-}
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    WasteManagementAppTheme {
-        Greeting("Android")
+    private fun getUserId(): String {
+        val prefs = getPreferences(MODE_PRIVATE)
+        var userId = prefs.getString("userId", null)
+        if(userId == null){
+            userId = UUID.randomUUID().toString()
+            prefs.edit().putString("userId", userId).apply()
+        }
+        return userId
     }
 }

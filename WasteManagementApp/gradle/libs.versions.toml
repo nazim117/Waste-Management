@@ -5,9 +5,15 @@ coreKtx = "1.13.1"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
+ktorClientSerialization = "2.3.2"
+ktorServerContentNegotiation = "2.3.2"
+ktorServerCoreVersion = "2.3.12"
+ktorServerNetty = "2.3.12"
+ktorServerRouting = "2.3.2"
 lifecycleRuntimeKtx = "2.8.4"
 activityCompose = "1.9.1"
 composeBom = "2024.04.01"
+roomKtx = "2.6.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -24,6 +30,12 @@ androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
+ktor-client-serialization = { module = "io.ktor:ktor-client-serialization", version.ref = "ktorClientSerialization" }
+ktor-ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktorServerCoreVersion" }
+ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktorServerContentNegotiation" }
+ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktorServerNetty" }
+ktor-server-routing = { module = "io.ktor:ktor-server-routing", version.ref = "ktorServerRouting" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
