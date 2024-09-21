@@ -10,15 +10,19 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import androidx.compose.ui.Modifier
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 
 @Composable
-fun ScoreSubmissionScreen(userId: String, database: LeaderboardDatabase) {
+fun ScoreSubmissionScreen(userId: String, firestore: FirebaseFirestore) {
     var scoreInput by remember { mutableStateOf("") }
     var leaderboard by remember { mutableStateOf(listOf<LeaderboardEntry>()) }
     val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
-        updateLeaderboard(database, leaderboardUpdater = {leaderboard = it})
+        updateLeaderboard(firestore){newLeaderboard ->
+            leaderboard = newLeaderboard
+        }
     }
 
     Column(
@@ -44,8 +48,8 @@ fun ScoreSubmissionScreen(userId: String, database: LeaderboardDatabase) {
             onClick = {
                 val score = scoreInput.toIntOrNull() ?: 0
                 coroutineScope.launch(Dispatchers.IO) {
-                    submitScore(database, userId, score)
-                    updateLeaderboard(database) { newLeaderboard ->
+                    submitScore(firestore, userId, score)
+                    updateLeaderboard(firestore) { newLeaderboard ->
                         coroutineScope.launch(Dispatchers.Main) {
                             leaderboard = newLeaderboard
                         }
@@ -74,17 +78,33 @@ fun ScoreSubmissionScreen(userId: String, database: LeaderboardDatabase) {
 }
 
 private suspend fun submitScore(
-    database: LeaderboardDatabase,
+    fireStore: FirebaseFirestore,
     userId: String,
     score: Int
 ) {
-    database.leaderboardDao().insertScore(LeaderboardEntry(userId, score))
+    val scoreData = hashMapOf(
+        "userId" to userId,
+        "score" to score
+    )
+    fireStore.collection("leaderboard")
+        .add(scoreData)
 }
 
-private suspend fun updateLeaderboard(
-    database: LeaderboardDatabase,
+private fun updateLeaderboard(
+    firestore: FirebaseFirestore,
     leaderboardUpdater: (List<LeaderboardEntry>) -> Unit
 ) {
-    val leaderboard = database.leaderboardDao().getTopScores(10)
-    leaderboardUpdater(leaderboard)
+    firestore.collection("leaderboard")
+        .orderBy("score", Query.Direction.DESCENDING)
+        .limit(10)
+        .get()
+        .addOnSuccessListener { result ->
+            val leaderboard = result.map { document ->
+                LeaderboardEntry (
+                    userId = document.getString("userId") ?: "",
+                    score = document.getLong("score")?.toInt() ?: 0
+                )
+            }
+            leaderboardUpdater(leaderboard)
+        }
 }

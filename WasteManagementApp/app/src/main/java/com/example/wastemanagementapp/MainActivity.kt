@@ -4,20 +4,21 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import java.util.UUID
+import com.google.firebase.firestore.FirebaseFirestore
 
 class MainActivity : ComponentActivity() {
-private lateinit var database: LeaderboardDatabase
+    private lateinit var firestore: FirebaseFirestore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        database = LeaderboardDatabase.getDatabase(this)
+        firestore = FirebaseFirestore.getInstance()
         var userId = getUserId()
 
         setContent {
             ScoreSubmissionScreen(
                 userId = userId,
-                database = database
+                firestore = firestore
             )
         }
 
