@@ -52,7 +52,13 @@ android {
 }
 
 dependencies {
-    implementation(platform("com.google.firebase:firebase-bom:33.3.0"))
+
+    implementation (libs.play.services.base)
+    implementation(libs.ui.tooling)
+    implementation(libs.ui)
+    implementation(libs.androidx.material.android)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.firebase.bom)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -65,6 +71,7 @@ dependencies {
 
     implementation(libs.androidx.room.ktx)
     implementation(libs.firebase.firestore.ktx)
+    implementation(libs.firebase.database.ktx)
     kapt("androidx.room:room-compiler:2.6.1")
 
     testImplementation(libs.junit)

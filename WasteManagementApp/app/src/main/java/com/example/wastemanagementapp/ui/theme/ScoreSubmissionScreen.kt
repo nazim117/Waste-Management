@@ -1,6 +1,7 @@
-package com.example.wastemanagementapp
+package com.example.wastemanagementapp.ui.theme
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -10,8 +11,10 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import androidx.compose.ui.Modifier
+import com.example.wastemanagementapp.LeaderboardEntry
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import kotlinx.coroutines.withContext
 
 @Composable
 fun ScoreSubmissionScreen(userId: String, firestore: FirebaseFirestore) {
@@ -60,19 +63,21 @@ fun ScoreSubmissionScreen(userId: String, firestore: FirebaseFirestore) {
         ){
             Text(text = "Submit Score")
         }
-
         Text(
             text = "Leaderboard:",
             fontSize = 16.sp,
             modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
         )
 
-        leaderboard.forEachIndexed{ index, entry ->
-            Text(
-                text = "${index + 1}. ${entry.userId.take(8)}... - ${entry.score}",
-                fontSize = 16.sp,
-                modifier = Modifier.padding(4.dp)
-            )
+        LazyColumn{
+            items(leaderboard.size) { index ->
+                val entry = leaderboard[index]
+                Text(
+                    text = "${index + 1}. ${entry.userId.take(8)}... - ${entry.score}",
+                    fontSize = 16.sp,
+                    modifier = Modifier.padding(4.dp)
+                )
+            }
         }
     }
 }
@@ -82,12 +87,14 @@ private suspend fun submitScore(
     userId: String,
     score: Int
 ) {
-    val scoreData = hashMapOf(
-        "userId" to userId,
-        "score" to score
-    )
-    fireStore.collection("leaderboard")
-        .add(scoreData)
+    withContext(Dispatchers.IO){
+        val scoreData = hashMapOf(
+            "userId" to userId,
+            "score" to score
+        )
+        fireStore.collection("leaderboard")
+            .add(scoreData)
+    }
 }
 
 private fun updateLeaderboard(

@@ -25,5 +25,61 @@
       }
     }
   ],
+  "quizzes": {
+    "waste_management": {
+      "questions":[
+        {
+          "id": "q1",
+          "question": "Why is it good to recycle your bags?",
+          "options": [
+            "It allows you to have more space",
+            "Companies are trying to save money",
+            "To create a healthier planet for ourselves and future generations"
+          ],
+          "correctAnswer": 2
+        },
+        {
+          "id": "q2",
+          "question": "What can be done to reduce food waste at home?",
+          "options": [
+            "Store leftovers and plan meals in advance",
+            "Buy more food than necessary",
+            "Leave perishable items out of the fridge"
+          ],
+          "correctAnswer": 0
+        },
+        {
+          "id": "q3",
+          "question": "Which of the following items should NOT be recycled?",
+          "options": [
+            "Glass bottles",
+            "Plastic containers",
+            "Styrofoam cups"
+          ],
+          "correctAnswer": 2
+        },
+        {
+          "id": "q4",
+          "question": "What is composting?",
+          "options": [
+            "A process to burn waste material",
+            "A method of recycling organic waste into nutrient-rich soil",
+            "A technique to break down plastic waste"
+          ],
+          "correctAnswer": 1
+        },
+        {
+          "id": "q5",
+          "question": "Which of the following items is a benefit of reducing plastic use?",
+          "options": [
+            "Plastic waste decomposes faster in landfills",
+            "It decreases pollution in oceans and waterways",
+            "Plastic is cheaper than other materials"
+          ],
+          "correctAnswer": 1
+        }
+      ]
+    }
+  },
   "configuration_version": "1"
 }
