@@ -14,6 +14,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import androidx.compose.foundation.layout.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.google.firebase.firestore.FirestoreRegistrar
 
 class MainActivity : ComponentActivity() {
     private lateinit var firestore: FirebaseFirestore
@@ -22,7 +23,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         firestore = FirebaseFirestore.getInstance()
-        var userId = getUserId()
+        val userId = getUserId()
 
         setContent {
             Surface(color = MaterialTheme.colorScheme.background) {
@@ -32,12 +33,11 @@ class MainActivity : ComponentActivity() {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ){
                     val viewModel = viewModel<QuizViewModel>()
-                    QuizScreen(viewModel)
+                    QuizScreen(viewModel, userId, firestore = firestore)
 
                     Spacer(modifier = Modifier.height(32.dp))
 
                     ScoreSubmissionScreen(
-                        userId = userId,
                         firestore = firestore
                     )
                 }

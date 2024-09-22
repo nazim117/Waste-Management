@@ -4,17 +4,15 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+import com.example.wastemanagementapp.LeaderboardEntry
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.toObject
+import com.google.firebase.firestore.Query
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -30,6 +28,9 @@ class QuizViewModel: ViewModel(){
     private val _questions = mutableStateListOf<QuizQuestion>()
     val questions: List<QuizQuestion> = _questions
 
+    private val _leaderboard = mutableStateListOf<LeaderboardEntry>()
+    val leaderboard: List<LeaderboardEntry> = _leaderboard
+
     private var _currentQuestionIndex = mutableStateOf(0)
     val currentQuestionIndex: State<Int> = _currentQuestionIndex
 
@@ -41,6 +42,10 @@ class QuizViewModel: ViewModel(){
 
     init {
         fetchQuizQuestions()
+    }
+
+    fun resetQuizFinished(){
+        _quizFinished.value = false
     }
 
     private fun fetchQuizQuestions() {
@@ -63,11 +68,37 @@ class QuizViewModel: ViewModel(){
         }
     }
 
-    fun submitAnswer(selectedAnswer: Int) {
-        viewModelScope.launch {
+    fun submitAnswer(selectedAnswer: Int, userId: String, firestore: FirebaseFirestore) {
+        viewModelScope.launch(Dispatchers.IO) {
             if(selectedAnswer == questions[currentQuestionIndex.value].correctAnswer){
                 _score.value++
+
+                firestore.collection("leaderboard")
+                    .whereEqualTo("userId", userId)
+                    .get()
+                    .addOnSuccessListener { documents ->
+                        if(documents.isEmpty){
+                            firestore.collection("leaderboard").add(
+                                hashMapOf(
+                                    "userId" to userId,
+                                    "score" to _score.value
+                                )
+                            )
+                        }else {
+                            val documentId = documents.documents[0].id
+                            val currentFirestoreScore = documents.documents[0].getLong("score")?.toInt() ?:0
+                            val updatedScore = currentFirestoreScore + _score.value
+                            println("updated score $updatedScore")
+                            firestore.collection("leaderboard")
+                                .document(documentId)
+                                .update("score", updatedScore)
+                        }
+                    }
+                    .addOnFailureListener{ exception ->
+                        exception.printStackTrace()
+                    }
             }
+            fetchLeaderboard(firestore)
             if(currentQuestionIndex.value < questions.size - 1){
                 _currentQuestionIndex.value++
             }else {
@@ -76,10 +107,39 @@ class QuizViewModel: ViewModel(){
         }
     }
 
+    private fun fetchLeaderboard(firestore: FirebaseFirestore) {
+        viewModelScope.launch(Dispatchers.IO) {
+            firestore.collection("leaderboard")
+                .orderBy("score", Query.Direction.DESCENDING)
+                .limit(10)
+                .get()
+                .addOnSuccessListener { result ->
+                    val newLeaderboard = result.map { document ->
+                        LeaderboardEntry (
+                            userId = document.getString("userId") ?: "",
+                            score = document.getLong("score")?.toInt() ?: 0
+                        )
+                    }
+                    _leaderboard.clear()
+                    _leaderboard.addAll(newLeaderboard)
+                }
+        }
+    }
+
 }
 @Composable
-fun QuizScreen(viewModel: QuizViewModel) {
+fun QuizScreen(viewModel: QuizViewModel, userId: String, firestore: FirebaseFirestore) {
+    val currentQuestionIndex by viewModel.currentQuestionIndex
     val questions = viewModel.questions
+    val quizFinished by viewModel.quizFinished
+    val score by viewModel.score
+
+    var showDialog by remember { mutableStateOf(false) }
+
+    if(quizFinished && !showDialog){
+        showDialog = true
+        println("Dialog shown")
+    }
 
     if (questions.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -89,11 +149,47 @@ fun QuizScreen(viewModel: QuizViewModel) {
         // Render the quiz UI
         QuizQuestion(
             question = questions[viewModel.currentQuestionIndex.value],
-            onAnswerSelected = { viewModel.submitAnswer(it) }
+            onAnswerSelected = { viewModel.submitAnswer(it, userId, firestore) }
+        )
+    }
+
+    if(showDialog){
+        QuizFinishedDialog(
+            score = score,
+            totalQuestions = questions.size,
+            onDismiss = {
+                showDialog = false
+                viewModel.resetQuizFinished()
+                println("Close button clicked: showdialog = $showDialog")
+            },
         )
     }
 }
 
+@Composable
+fun QuizFinishedDialog(
+    score: Int,
+    totalQuestions: Int,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(text = "Quiz Finished!")
+        },
+        text = {
+            Column {
+                Text(text = "Your score is $score out of $totalQuestions")
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+        },
+        confirmButton = {
+            Button(onClick = onDismiss) {
+                Text("Close")
+            }
+        }
+    )
+}
 
 @Composable
 fun QuizQuestion(question: QuizQuestion, onAnswerSelected: (Int) -> Unit) {
@@ -118,7 +214,7 @@ fun QuizQuestion(question: QuizQuestion, onAnswerSelected: (Int) -> Unit) {
                 )
                 Text(
                     text = option,
-                    style = MaterialTheme.typography.bodySmall.merge(),
+                    style = MaterialTheme.typography.bodyLarge.merge(),
                     modifier = Modifier.padding(start = 16.dp)
                 )
             }
@@ -133,24 +229,5 @@ fun QuizQuestion(question: QuizQuestion, onAnswerSelected: (Int) -> Unit) {
         ){
             Text("Submit")
         }
-    }
-}
-
-private @Composable
-fun QuizResult(score: Int, totalQuestions: Int) {
-    Column(
-        modifier =  Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = "Quiz Finished!",
-            style = MaterialTheme.typography.headlineLarge
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "Your score $score out of $totalQuestions",
-            style = MaterialTheme.typography.headlineMedium
-        )
     }
 }
