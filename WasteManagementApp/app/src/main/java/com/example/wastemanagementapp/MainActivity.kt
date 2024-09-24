@@ -9,6 +9,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Alignment
@@ -18,7 +21,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.wastemanagementapp.ui.theme.CarbonFootprintScreen
 import com.example.wastemanagementapp.ui.theme.QuizScreen
 import com.example.wastemanagementapp.ui.theme.QuizViewModel
-import com.example.wastemanagementapp.ui.theme.ScoreSubmissionScreen
+import com.example.wastemanagementapp.ui.theme.Leaderboard
 import com.example.wastemanagementapp.ui.theme.WeeklyUserChallengeScreen
 import com.google.firebase.firestore.FirebaseFirestore
 import java.util.UUID
@@ -34,35 +37,36 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             Surface(color = MaterialTheme.colorScheme.background) {
-                Column(
+                LazyColumn (
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(16.dp),
-                    verticalArrangement = Arrangement.Top,
+                    verticalArrangement = Arrangement.spacedBy(32.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Weekly User Challenge (1st)
-                    WeeklyUserChallengeScreen()
+                    item{
+                        // Weekly User Challenge (1st)
+                        WeeklyUserChallengeScreen()
+                    }
 
-                    Spacer(modifier = Modifier.height(32.dp))
+                    item{
+                        // Quiz Screen (2nd)
+                        val viewModel = viewModel<QuizViewModel>()
+                        QuizScreen(viewModel, userId, firestore)
+                    }
 
-                    // Quiz Screen (2nd)
-                    val viewModel = viewModel<QuizViewModel>()
-                    QuizScreen(viewModel, userId, firestore)
+                    item{
+                        // Carbon Footprint (3rd)
+                        CarbonFootprintScreen()
+                    }
 
-                    Spacer(modifier = Modifier.height(32.dp))
-
-                    // Carbon Footprint (3rd)
-                    CarbonFootprintScreen()
-
-                    Spacer(modifier = Modifier.height(32.dp))
-
-                    // Leaderboard (4th)
-                    ScoreSubmissionScreen(firestore = firestore)
+                    item{
+                        // Leaderboard (4th)
+                        Leaderboard(firestore = firestore)
+                    }
                 }
             }
         }
-
     }
 
     private fun getUserId(): String {

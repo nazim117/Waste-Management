@@ -1,5 +1,6 @@
 package com.example.wastemanagementapp.ui.theme
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,6 +24,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -145,7 +148,6 @@ class QuizViewModel: ViewModel(){
 }
 @Composable
 fun QuizScreen(viewModel: QuizViewModel, userId: String, firestore: FirebaseFirestore) {
-    val currentQuestionIndex by viewModel.currentQuestionIndex
     val questions = viewModel.questions
     val quizFinished by viewModel.quizFinished
     val score by viewModel.score
@@ -211,9 +213,17 @@ fun QuizFinishedDialog(
 fun QuizQuestion(question: QuizQuestion, onAnswerSelected: (Int) -> Unit) {
     var selectedOption by remember { mutableStateOf<Int?>(null) }
 
-    Column(modifier = Modifier.padding(16.dp)) {
-        Text(text = question.question, style = MaterialTheme.typography.headlineLarge)
-        Spacer(modifier = Modifier.height(16.dp))
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFFE8F5E9))
+            .padding(16.dp)
+    ) {
+        Text(
+            text = question.question,
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
         question.options.forEachIndexed{ index, option ->
             Row(
                 Modifier
@@ -235,13 +245,13 @@ fun QuizQuestion(question: QuizQuestion, onAnswerSelected: (Int) -> Unit) {
                 )
             }
         }
-        Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = {
                 selectedOption?.let { onAnswerSelected(it)}
                 selectedOption = null
             },
-            enabled = selectedOption != null
+            enabled = selectedOption != null,
+            modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
         ){
             Text("Submit")
         }
