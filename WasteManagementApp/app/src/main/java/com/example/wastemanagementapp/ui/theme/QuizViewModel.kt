@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -29,7 +28,6 @@ class QuizViewModel: ViewModel(){
     val questions: List<QuizQuestion> = _questions
 
     private val _leaderboard = mutableStateListOf<LeaderboardEntry>()
-    val leaderboard: List<LeaderboardEntry> = _leaderboard
 
     private var _currentQuestionIndex = mutableStateOf(0)
     val currentQuestionIndex: State<Int> = _currentQuestionIndex
@@ -125,11 +123,9 @@ class QuizViewModel: ViewModel(){
                 }
         }
     }
-
 }
 @Composable
 fun QuizScreen(viewModel: QuizViewModel, userId: String, firestore: FirebaseFirestore) {
-    val currentQuestionIndex by viewModel.currentQuestionIndex
     val questions = viewModel.questions
     val quizFinished by viewModel.quizFinished
     val score by viewModel.score

@@ -14,7 +14,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 import androidx.compose.foundation.layout.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.google.firebase.firestore.FirestoreRegistrar
 
 class MainActivity : ComponentActivity() {
     private lateinit var firestore: FirebaseFirestore
@@ -43,7 +42,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-
     }
 
     private fun getUserId(): String {
