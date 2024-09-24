@@ -53,7 +53,7 @@ android {
 
 dependencies {
 
-    implementation (libs.play.services.base)
+    implementation(libs.play.services.base)
     implementation(libs.ui.tooling)
     implementation(libs.ui)
     implementation(libs.androidx.material.android)
