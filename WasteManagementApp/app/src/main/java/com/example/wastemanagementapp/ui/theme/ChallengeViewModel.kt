@@ -37,13 +37,17 @@ class ChallengeViewModel : ViewModel() {
     private val _challenges = mutableStateListOf<Challenge>()
     val challenges: List<Challenge> = _challenges
 
-    // State for the current challenge index
     private var _currentChallengeIndex = mutableStateOf(0)
     val currentChallengeIndex: Int get() = _currentChallengeIndex.value
 
-    // State to check if all challenges are completed
     private var _challengesCompleted = mutableStateOf(false)
     val challengesCompleted: Boolean get() = _challengesCompleted.value
+
+    private var _currentChallengeProgress = mutableStateOf(0)
+    val currentChallengeProgress: Int get() = _currentChallengeProgress.value
+
+    private var _currentChallengeFinished = mutableStateOf(false)
+    val currentChallengeFinished: Boolean get() = _currentChallengeFinished.value
 
     init {
         fetchChallenges()
@@ -68,7 +72,22 @@ class ChallengeViewModel : ViewModel() {
         }
     }
 
-    fun submitChallenge() {
+    fun completeChallengeAction() {
+        if (!_currentChallengeFinished.value) {
+            if (_currentChallengeProgress.value < 3) {
+                _currentChallengeProgress.value++
+            }
+            if (_currentChallengeProgress.value == 3) {
+                _currentChallengeFinished.value = true
+            }
+        } else {
+            submitChallenge()
+        }
+    }
+
+    private fun submitChallenge() {
+        _currentChallengeProgress.value = 0
+        _currentChallengeFinished.value = false
         if (_currentChallengeIndex.value < challenges.size - 1) {
             _currentChallengeIndex.value++
         } else {
@@ -105,28 +124,34 @@ class ChallengeViewModel : ViewModel() {
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        repeat(3) { index ->
+                            if (index < currentChallengeProgress) {
+                                Icon(Icons.Default.Star, contentDescription = "Star", tint = Color.Yellow)
+                            } else {
+                                Icon(Icons.Default.Star, contentDescription = "Star", tint = Color.Gray)
+                            }
+                        }
+                    }
                 } else {
                     Text("No challenges available.")
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Icon(Icons.Default.Star, contentDescription = "Star", tint = Color.Gray)
-                    Icon(Icons.Default.Star, contentDescription = "Star", tint = Color.Gray)
-                    Icon(Icons.Default.Star, contentDescription = "Star", tint = Color.Gray)
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
-                    onClick = { submitChallenge() },
+                    onClick = { completeChallengeAction() },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(text = "Submit")
+                    if (currentChallengeFinished) {
+                        Text(text = "Next Challenge")
+                    } else {
+                        Text(text = "Submit")
+                    }
                 }
             }
         }
