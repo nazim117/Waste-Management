@@ -32,7 +32,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             Surface(color = MaterialTheme.colorScheme.background) {
-                LazyColumn (
+                LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(16.dp),
@@ -42,21 +42,25 @@ class MainActivity : ComponentActivity() {
                     item {
                         // Weekly User Challenge (1st)
                         val challengeViewModel = viewModel<ChallengeViewModel>()
-                        challengeViewModel.WeeklyUserChallengeScreen()
+                        challengeViewModel.WeeklyUserChallengeScreen() // Call directly from ViewModel
                     }
 
-                    item{
+                    item {
                         // Quiz Screen (2nd)
-                        val viewModel = viewModel<QuizViewModel>()
-                        QuizScreen(viewModel, userId, firestore)
+                        val quizViewModel = viewModel<QuizViewModel>()
+                        QuizScreen(viewModel = quizViewModel, userId = userId, firestore = firestore)
                     }
 
-                    item{
+                    item {
                         // Carbon Footprint (3rd)
-                        CarbonFootprintScreen()
+                        val challengeViewModel = viewModel<ChallengeViewModel>()
+                        CarbonFootprintScreen(
+                            totalCarbonSavings = challengeViewModel.getCarbonSavings(),
+                            totalMoneySaved = challengeViewModel.getMoneySaved()
+                        )
                     }
 
-                    item{
+                    item {
                         // Leaderboard (4th)
                         Leaderboard(firestore = firestore)
                     }

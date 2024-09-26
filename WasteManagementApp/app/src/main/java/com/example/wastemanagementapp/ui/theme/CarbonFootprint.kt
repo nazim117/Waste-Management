@@ -15,7 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun CarbonFootprintScreen(modifier: Modifier = Modifier) {
+fun CarbonFootprintScreen(totalCarbonSavings: Double, totalMoneySaved: Double, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -29,16 +29,16 @@ fun CarbonFootprintScreen(modifier: Modifier = Modifier) {
         )
 
         Row(
-          modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Column (horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(text = "Money saved")
-                Text(text = "25$")
+                Text(text = "$${totalMoneySaved}")
             }
-            Column (horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = "CO2e")
-                Text(text = "100kWh")
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(text = "CO2e Reduced")
+                Text(text = "${totalCarbonSavings} kg CO2e")
             }
         }
     }

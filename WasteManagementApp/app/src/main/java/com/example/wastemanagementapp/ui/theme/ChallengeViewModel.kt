@@ -29,7 +29,9 @@ import kotlinx.coroutines.launch
 
 data class Challenge(
     val id: String = "",
-    val challenge: String = ""
+    val challenge: String = "",
+    val carbonSavings: Double = 0.0,
+    val moneySaved: Double = 0.0
 )
 
 class ChallengeViewModel : ViewModel() {
@@ -48,6 +50,12 @@ class ChallengeViewModel : ViewModel() {
 
     private var _currentChallengeFinished = mutableStateOf(false)
     val currentChallengeFinished: Boolean get() = _currentChallengeFinished.value
+
+    private var _totalCarbonSavings = mutableStateOf(0.0)
+    val totalCarbonSavings: Double get() = _totalCarbonSavings.value
+
+    private var _totalMoneySaved = mutableStateOf(0.0)
+    val totalMoneySaved: Double get() = _totalMoneySaved.value
 
     init {
         fetchChallenges()
@@ -79,6 +87,10 @@ class ChallengeViewModel : ViewModel() {
             }
             if (_currentChallengeProgress.value == 3) {
                 _currentChallengeFinished.value = true
+
+                val currentChallenge = challenges[currentChallengeIndex]
+                _totalCarbonSavings.value += currentChallenge.carbonSavings
+                _totalMoneySaved.value += currentChallenge.moneySaved
             }
         } else {
             submitChallenge()
@@ -93,6 +105,14 @@ class ChallengeViewModel : ViewModel() {
         } else {
             _challengesCompleted.value = true
         }
+    }
+
+    fun getCarbonSavings(): Double {
+        return _totalCarbonSavings.value
+    }
+
+    fun getMoneySaved(): Double {
+        return _totalMoneySaved.value
     }
 
     @Composable
