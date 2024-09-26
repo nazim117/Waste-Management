@@ -25,7 +25,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -103,7 +102,7 @@ class QuizViewModel: ViewModel(){
                                     "score" to _score.value
                                 )
                             )
-                        }else {
+                        } else {
                             val documentId = documents.documents[0].id
                             val currentFirestoreScore = documents.documents[0].getLong("score")?.toInt() ?:0
                             val updatedScore = currentFirestoreScore + _score.value
