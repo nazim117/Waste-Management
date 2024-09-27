@@ -112,12 +112,12 @@ class QuizViewModel: ViewModel(){
                                 .document(documentId)
                                 .update("score", updatedScore)
                         }
+                        fetchLeaderboard(firestore)
                     }
                     .addOnFailureListener{ exception ->
                         exception.printStackTrace()
                     }
             }
-            fetchLeaderboard(firestore)
             if(currentQuestionIndex.value < questions.size - 1){
                 _currentQuestionIndex.value++
             }else {
@@ -144,7 +144,6 @@ class QuizViewModel: ViewModel(){
                 }
         }
     }
-
 }
 @Composable
 fun QuizScreen(viewModel: QuizViewModel, userId: String, firestore: FirebaseFirestore) {
