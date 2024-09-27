@@ -47,7 +47,6 @@ class QuizViewModel: ViewModel(){
     val questions: List<QuizQuestion> = _questions
 
     private val _leaderboard = mutableStateListOf<LeaderboardEntry>()
-    val leaderboard: List<LeaderboardEntry> = _leaderboard
 
     private var _currentQuestionIndex = mutableStateOf(0)
     val currentQuestionIndex: State<Int> = _currentQuestionIndex
@@ -104,7 +103,9 @@ class QuizViewModel: ViewModel(){
                             )
                         } else {
                             val documentId = documents.documents[0].id
+
                             val currentFirestoreScore = documents.documents[0].getLong("score")?.toInt() ?:0
+
                             val updatedScore = currentFirestoreScore + _score.value
                             println("updated score $updatedScore")
                             firestore.collection("leaderboard")

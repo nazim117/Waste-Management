@@ -1,5 +1,6 @@
 package com.example.wastemanagementapp
 
+import CarbonFootprintScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -13,7 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.wastemanagementapp.ui.theme.CarbonFootprintScreen
 import com.example.wastemanagementapp.ui.theme.ChallengeViewModel
 import com.example.wastemanagementapp.ui.theme.Leaderboard
 import com.example.wastemanagementapp.ui.theme.QuizScreen
@@ -42,7 +42,7 @@ class MainActivity : ComponentActivity() {
                     item {
                         // Weekly User Challenge (1st)
                         val challengeViewModel = viewModel<ChallengeViewModel>()
-                        challengeViewModel.WeeklyUserChallengeScreen() // Call directly from ViewModel
+                        challengeViewModel.WeeklyUserChallengeScreen(viewModel = challengeViewModel, userId = userId, firestore = firestore) // Call directly from ViewModel
                     }
 
                     item {
@@ -54,10 +54,7 @@ class MainActivity : ComponentActivity() {
                     item {
                         // Carbon Footprint (3rd)
                         val challengeViewModel = viewModel<ChallengeViewModel>()
-                        CarbonFootprintScreen(
-                            totalCarbonSavings = challengeViewModel.getCarbonSavings(),
-                            totalMoneySaved = challengeViewModel.getMoneySaved()
-                        )
+                        CarbonFootprintScreen(userId = userId)
                     }
 
                     item {

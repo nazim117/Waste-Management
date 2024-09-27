@@ -57,6 +57,9 @@ class ChallengeViewModel : ViewModel() {
     private var _totalMoneySaved = mutableStateOf(0.0)
     val totalMoneySaved: Double get() = _totalMoneySaved.value
 
+    private var _score = mutableStateOf(0)
+    val score: Int get() = _score.value
+
     init {
         fetchChallenges()
     }
@@ -80,7 +83,7 @@ class ChallengeViewModel : ViewModel() {
         }
     }
 
-    fun completeChallengeAction() {
+    fun completeChallengeAction(userId: String) {
         if (!_currentChallengeFinished.value) {
             if (_currentChallengeProgress.value < 3) {
                 _currentChallengeProgress.value++
@@ -91,19 +94,104 @@ class ChallengeViewModel : ViewModel() {
                 val currentChallenge = challenges[currentChallengeIndex]
                 _totalCarbonSavings.value += currentChallenge.carbonSavings
                 _totalMoneySaved.value += currentChallenge.moneySaved
+                _score.value += 1 // Increment score for the user
+                firestore.collection("leaderboard")
+                    .whereEqualTo("userId", userId)
+                    .get()
+                    .addOnSuccessListener { documents ->
+                        if(documents.isEmpty){
+                            firestore.collection("leaderboard").add(
+                                hashMapOf(
+                                    "userId" to userId,
+                                    "score" to _score.value,
+                                    "carbonSavings" to _totalCarbonSavings.value,
+                                    "moneySaved" to _totalMoneySaved.value
+                                )
+                            )
+                        } else {
+                            val documentId = documents.documents[0].id
+
+                            val currentFirestoreScore = documents.documents[0].getLong("score")?.toInt() ?:0
+                            val currentFirestoreCarbonSavings = documents.documents[0].getLong("carbonSavings")?.toDouble() ?:0.0
+                            val currentFirestoreMoneySaved = documents.documents[0].getLong("moneySaved")?.toInt() ?:0
+
+                            val updatedScore = currentFirestoreScore + _score.value
+                            val updatedCarbonSavings = currentFirestoreCarbonSavings + _totalCarbonSavings.value
+                            val updatedMoneySaved = currentFirestoreMoneySaved + _totalMoneySaved.value
+
+                            println("updated score $updatedScore")
+                            println("updated carbonSavings $updatedCarbonSavings")
+                            println("updated MoneySaved $updatedMoneySaved")
+
+                            val updates = mapOf(
+                                "score" to updatedScore,
+                                "carbonSavings" to updatedCarbonSavings,
+                                "moneySaved" to updatedMoneySaved
+                            )
+
+                            // Perform the update
+                            firestore.collection("leaderboard")
+                                .document(documentId)
+                                .update(updates)
+                                .addOnSuccessListener {
+                                    println("Successfully updated user data.")
+                                }
+                                .addOnFailureListener { exception ->
+                                    exception.printStackTrace()
+                                }
+                        }
+                    }
+                    .addOnFailureListener{ exception ->
+                        exception.printStackTrace()
+                    }
             }
         } else {
-            submitChallenge()
+            submitChallenge(userId)
         }
     }
 
-    private fun submitChallenge() {
+    private fun submitChallenge(userId: String) {
         _currentChallengeProgress.value = 0
         _currentChallengeFinished.value = false
         if (_currentChallengeIndex.value < challenges.size - 1) {
             _currentChallengeIndex.value++
         } else {
             _challengesCompleted.value = true
+        }
+
+        // Save new data to Firestore after completing a challenge
+        saveDataToFirestore(userId)
+    }
+
+    private fun saveDataToFirestore(userId: String) {
+        val userDocRef = firestore.collection("leaderboard").document(userId)
+
+        // Update the user's carbonSavings and score
+        userDocRef.get().addOnSuccessListener { documentSnapshot ->
+            if (documentSnapshot.exists()) {
+                // User already exists, update the document
+                val currentCarbonSavings = documentSnapshot.getDouble("carbonSavings") ?: 0.0
+                val currentScore = documentSnapshot.getLong("score")?.toInt() ?: 0
+
+                userDocRef.update(
+                    mapOf(
+                        "carbonSavings" to currentCarbonSavings + totalCarbonSavings,
+                        "score" to currentScore + score
+                    )
+                )
+            } else {
+                // Create a new document for the user
+                userDocRef.set(
+                    mapOf(
+                        "userId" to userId,
+                        "carbonSavings" to totalCarbonSavings,
+                        "score" to score
+                    )
+                )
+            }
+        }.addOnFailureListener { exception ->
+            // Handle failure
+            exception.printStackTrace()
         }
     }
 
@@ -116,7 +204,10 @@ class ChallengeViewModel : ViewModel() {
     }
 
     @Composable
-    fun WeeklyUserChallengeScreen() {
+    fun WeeklyUserChallengeScreen(viewModel: ChallengeViewModel, userId: String, firestore: FirebaseFirestore) {
+        val challenges = viewModel.challenges
+        val challengesCompleted = viewModel.challengesCompleted
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -161,10 +252,8 @@ class ChallengeViewModel : ViewModel() {
                     Text("No challenges available.")
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
-
                 Button(
-                    onClick = { completeChallengeAction() },
+                    onClick = { completeChallengeAction(userId) },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     if (currentChallengeFinished) {

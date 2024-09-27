@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,15 +22,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.wastemanagementapp.LeaderboardEntry
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
 
 @Composable
 fun Leaderboard(firestore: FirebaseFirestore) {
     var leaderboard by remember { mutableStateOf(listOf<LeaderboardEntry>()) }
 
-    LaunchedEffect(Unit) {
-        updateLeaderboard(firestore){newLeaderboard ->
+    var snapshotListener by remember { mutableStateOf<ListenerRegistration?>(null) }
+
+    DisposableEffect(Unit) {
+        snapshotListener = setupLeaderBoardListener(firestore) { newLeaderboard ->
             leaderboard = newLeaderboard
+        }
+
+        onDispose {
+            snapshotListener?.remove()
         }
     }
 
@@ -62,6 +70,31 @@ fun Leaderboard(firestore: FirebaseFirestore) {
             }
         }
     }
+}
+
+fun setupLeaderBoardListener(
+    firestore: FirebaseFirestore,
+    onDataChanged: (List<LeaderboardEntry>) -> Unit
+): ListenerRegistration? {
+    return firestore.collection("leaderboard")
+        .orderBy("score", Query.Direction.DESCENDING)
+        .limit(10)
+        .addSnapshotListener { snapshots, exception ->
+            if(exception != null) {
+                exception.printStackTrace()
+                return@addSnapshotListener
+            }
+
+            if(snapshots != null){
+                val leaderboard = snapshots.documents.map { document ->
+                    LeaderboardEntry(
+                        userId = document.getString("userId") ?: "",
+                        score = document.getLong("score")?.toInt() ?: 0
+                    )
+                }
+                onDataChanged(leaderboard)
+            }
+        }
 }
 
 fun updateLeaderboard(
