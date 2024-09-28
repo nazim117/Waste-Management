@@ -1,6 +1,8 @@
 # Duo Case 23: Waste Management  
 ### Semester 4 - Duo-App Project #1
 
+<!-- -->
+
 ## Project Overview
 The goal of this project is to encourage and promote better waste management practices, 
 specifically targeting families who want to be more mindful of how they handle waste. 
