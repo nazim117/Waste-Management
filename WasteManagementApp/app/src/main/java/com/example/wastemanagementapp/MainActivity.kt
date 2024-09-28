@@ -1,6 +1,5 @@
 package com.example.wastemanagementapp
 
-import CarbonFootprintScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -16,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.wastemanagementapp.ui.theme.CarbonFootprintScreen
 import com.example.wastemanagementapp.ui.theme.ChallengeViewModel
 import com.example.wastemanagementapp.ui.theme.Leaderboard
 import com.example.wastemanagementapp.ui.theme.QuizScreen
