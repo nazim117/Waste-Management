@@ -3,12 +3,15 @@ package com.example.wastemanagementapp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -19,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -42,33 +46,45 @@ class MainActivity : ComponentActivity() {
             val challengeViewModel: ChallengeViewModel = viewModel()
             val quizViewModel: QuizViewModel = viewModel()
 
+            val isLoading = challengeViewModel.loading || quizViewModel.loading
+
             // Initialize state for navigation
             var currentScreen by remember { mutableStateOf(WasteManagementScreen.Home) }
 
-            Scaffold(
-                bottomBar = {
-                    BottomNavigationBar(
-                        currentScreen = currentScreen,
-                        onScreenSelected = { screen -> currentScreen = screen }
-                    )
-                }
-            ) { innerPadding ->
-                Surface(
-                    color = MaterialTheme.colorScheme.background,
-                    modifier = Modifier.padding(innerPadding)
+            if (isLoading) {
+                // Full-screen loading indicator
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    when (currentScreen) {
-                        WasteManagementScreen.Home -> HomeScreen(
-                            userId = userId,
-                            challengeViewModel = challengeViewModel,
-                            onNavigateToQuizAndLeaderboard = { currentScreen = WasteManagementScreen.QuizAndLeaderboard }
+                    CircularProgressIndicator()
+                }
+            } else {
+                Scaffold(
+                    bottomBar = {
+                        BottomNavigationBar(
+                            currentScreen = currentScreen,
+                            onScreenSelected = { screen -> currentScreen = screen }
                         )
-                        WasteManagementScreen.QuizAndLeaderboard -> QuizAndLeaderboardScreen(
-                            userId = userId,
-                            quizViewModel = quizViewModel,
-                            firestore = firestore,
-                            onNavigateBack = { currentScreen = WasteManagementScreen.Home }
-                        )
+                    }
+                ) { innerPadding ->
+                    Surface(
+                        color = MaterialTheme.colorScheme.background,
+                        modifier = Modifier.padding(innerPadding)
+                    ) {
+                        when (currentScreen) {
+                            WasteManagementScreen.Home -> HomeScreen(
+                                userId = userId,
+                                challengeViewModel = challengeViewModel,
+                                onNavigateToQuizAndLeaderboard = { currentScreen = WasteManagementScreen.QuizAndLeaderboard }
+                            )
+                            WasteManagementScreen.QuizAndLeaderboard -> QuizAndLeaderboardScreen(
+                                userId = userId,
+                                quizViewModel = quizViewModel,
+                                firestore = firestore,
+                                onNavigateBack = { currentScreen = WasteManagementScreen.Home }
+                            )
+                        }
                     }
                 }
             }
