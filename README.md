@@ -1,5 +1,5 @@
-# Semester 4 Duo-App Project #1  
-# Duo Case 23: Waste Management
+# Duo Case 23: Waste Management  
+### Semester 4 - Duo-App Project #1
 
 ## Project Overview
 The goal of this project is to encourage and promote better waste management practices, 
@@ -37,13 +37,13 @@ Developing for Android is also more cost-effective since it doesn't require spec
 
 
 ### Database: **Firebase**
-- Firebase is used to manage real-time data storage and synchronization. 
-  It provides various features, making it an ideal backend solution for our app.
+Firebase is used to manage real-time data storage and synchronization. 
+It provides various features, making it an ideal backend solution for our app.
 
-  - **NoSQL Database**: Quick setup and flexible data structure with Firestore.
-  - **Seamless Integration**: Easy to integrate with Android apps using Firebase SDK.
-  - **Free Hosting**: Firebase offers a free tier, suitable for small-to-medium projects.
-  - **Real-Time Data**: Firebase supports real-time synchronization, which is used for the leaderboard and other features in the app.
+- **NoSQL Database**: Quick setup and flexible data structure with Firestore.
+- **Seamless Integration**: Easy to integrate with Android apps using Firebase SDK.
+- **Free Hosting**: Firebase offers a free tier, suitable for small-to-medium projects.
+- **Real-Time Data**: Firebase supports real-time synchronization, which is used for the leaderboard and other features in the app.
 
 
 
