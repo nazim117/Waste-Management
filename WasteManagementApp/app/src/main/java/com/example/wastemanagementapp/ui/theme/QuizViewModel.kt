@@ -46,6 +46,9 @@ class QuizViewModel: ViewModel(){
     private val _questions = mutableStateListOf<QuizQuestion>()
     val questions: List<QuizQuestion> = _questions
 
+    private var _loading = mutableStateOf(true)
+    val loading: Boolean get() = _loading.value
+
     private val _leaderboard = mutableStateListOf<LeaderboardEntry>()
 
     private var _currentQuestionIndex = mutableStateOf(0)
@@ -67,6 +70,7 @@ class QuizViewModel: ViewModel(){
 
     private fun fetchQuizQuestions() {
         viewModelScope.launch(Dispatchers.IO){
+            _loading.value = true
             firestore.collection("quizzes")
                 .document("waste_management")
                 .collection("questions")
@@ -75,11 +79,14 @@ class QuizViewModel: ViewModel(){
                     val fetchedQuestions = result.mapNotNull { document ->
                         document.toObject(QuizQuestion::class.java)
                     }
+                    _questions.clear()
                     _questions.addAll(fetchedQuestions)
+                    _loading.value = false
                 }
                 .addOnFailureListener{ exception ->
                     viewModelScope.launch (Dispatchers.Main){
                         exception.printStackTrace()
+                        _loading.value = false
                     }
                 }
         }
@@ -150,7 +157,6 @@ fun QuizScreen(viewModel: QuizViewModel, userId: String, firestore: FirebaseFire
     val questions = viewModel.questions
     val quizFinished by viewModel.quizFinished
     val score by viewModel.score
-
     var showDialog by remember { mutableStateOf(false) }
 
     if(quizFinished && !showDialog){

@@ -4,9 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
@@ -39,6 +37,12 @@ class ChallengeViewModel : ViewModel() {
     private val _challenges = mutableStateListOf<Challenge>()
     val challenges: List<Challenge> = _challenges
 
+    private var _streak = mutableStateOf(0)
+    val streak: Int get() = _streak.value
+
+    private var _loading = mutableStateOf(true)
+    val loading: Boolean get() = _loading.value
+
     private var _currentChallengeIndex = mutableStateOf(0)
     val currentChallengeIndex: Int get() = _currentChallengeIndex.value
 
@@ -64,8 +68,10 @@ class ChallengeViewModel : ViewModel() {
         fetchChallenges()
     }
 
+
     private fun fetchChallenges() {
         viewModelScope.launch(Dispatchers.IO) {
+            _loading.value = true
             firestore.collection("challenges")
                 .document("waste_management")
                 .collection("tasks")
@@ -76,9 +82,12 @@ class ChallengeViewModel : ViewModel() {
                     }
                     _challenges.clear()
                     _challenges.addAll(fetchedChallenges)
+                    _loading.value = false
+
                 }
                 .addOnFailureListener { exception ->
                     exception.printStackTrace()
+                    _loading.value = false
                 }
         }
     }
@@ -88,6 +97,7 @@ class ChallengeViewModel : ViewModel() {
             if (_currentChallengeProgress.value < 3) {
                 _currentChallengeProgress.value++
             }
+
             if (_currentChallengeProgress.value == 3) {
                 _currentChallengeFinished.value = true
 
@@ -105,7 +115,8 @@ class ChallengeViewModel : ViewModel() {
                                     "userId" to userId,
                                     "score" to _score.value,
                                     "carbonSavings" to _totalCarbonSavings.value,
-                                    "moneySaved" to _totalMoneySaved.value
+                                    "moneySaved" to _totalMoneySaved.value,
+                                    "streak" to _streak.value
                                 )
                             )
                         } else {
@@ -114,19 +125,23 @@ class ChallengeViewModel : ViewModel() {
                             val currentFirestoreScore = documents.documents[0].getLong("score")?.toInt() ?:0
                             val currentFirestoreCarbonSavings = documents.documents[0].getLong("carbonSavings")?.toDouble() ?:0.0
                             val currentFirestoreMoneySaved = documents.documents[0].getLong("moneySaved")?.toInt() ?:0
+                            val currentFirestoreStreak = documents.documents[0].getLong("streak")?.toInt() ?:0
 
-                            val updatedScore = currentFirestoreScore + _score.value
+                            val updatedScore = currentFirestoreScore + 1
                             val updatedCarbonSavings = currentFirestoreCarbonSavings + _totalCarbonSavings.value
                             val updatedMoneySaved = currentFirestoreMoneySaved + _totalMoneySaved.value
+                            val updatedStreak = currentFirestoreStreak + 1
 
                             println("updated score $updatedScore")
                             println("updated carbonSavings $updatedCarbonSavings")
                             println("updated MoneySaved $updatedMoneySaved")
+                            println("updated Streak $updatedStreak")
 
                             val updates = mapOf(
                                 "score" to updatedScore,
                                 "carbonSavings" to updatedCarbonSavings,
-                                "moneySaved" to updatedMoneySaved
+                                "moneySaved" to updatedMoneySaved,
+                                "streak" to updatedStreak
                             )
 
                             // Perform the update
@@ -153,6 +168,8 @@ class ChallengeViewModel : ViewModel() {
     private fun submitChallenge(userId: String) {
         _currentChallengeProgress.value = 0
         _currentChallengeFinished.value = false
+
+        _streak.value += 1
         if (_currentChallengeIndex.value < challenges.size - 1) {
             _currentChallengeIndex.value++
         } else {
@@ -172,11 +189,13 @@ class ChallengeViewModel : ViewModel() {
                 // User already exists, update the document
                 val currentCarbonSavings = documentSnapshot.getDouble("carbonSavings") ?: 0.0
                 val currentScore = documentSnapshot.getLong("score")?.toInt() ?: 0
+                val currentStreak = documentSnapshot.getLong("streak")?.toInt() ?: 0
 
                 userDocRef.update(
                     mapOf(
                         "carbonSavings" to currentCarbonSavings + totalCarbonSavings,
-                        "score" to currentScore + score
+                        "score" to currentScore + score,
+                        "streak" to currentStreak + 1
                     )
                 )
             } else {
@@ -185,7 +204,8 @@ class ChallengeViewModel : ViewModel() {
                     mapOf(
                         "userId" to userId,
                         "carbonSavings" to totalCarbonSavings,
-                        "score" to score
+                        "score" to score,
+                        "streak" to streak
                     )
                 )
             }
@@ -194,17 +214,8 @@ class ChallengeViewModel : ViewModel() {
             exception.printStackTrace()
         }
     }
-
-    fun getCarbonSavings(): Double {
-        return _totalCarbonSavings.value
-    }
-
-    fun getMoneySaved(): Double {
-        return _totalMoneySaved.value
-    }
-
     @Composable
-    fun WeeklyUserChallengeScreen(viewModel: ChallengeViewModel, userId: String, firestore: FirebaseFirestore) {
+    fun WeeklyUserChallengeScreen(viewModel: ChallengeViewModel, userId: String) {
         val challenges = viewModel.challenges
         val challengesCompleted = viewModel.challengesCompleted
 

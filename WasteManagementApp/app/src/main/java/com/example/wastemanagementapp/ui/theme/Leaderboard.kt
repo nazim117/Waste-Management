@@ -96,22 +96,3 @@ fun setupLeaderBoardListener(
             }
         }
 }
-
-fun updateLeaderboard(
-    firestore: FirebaseFirestore,
-    leaderboardUpdater: (List<LeaderboardEntry>) -> Unit
-) {
-    firestore.collection("leaderboard")
-        .orderBy("score", Query.Direction.DESCENDING)
-        .limit(10)
-        .get()
-        .addOnSuccessListener { result ->
-            val leaderboard = result.map { document ->
-                LeaderboardEntry (
-                    userId = document.getString("userId") ?: "",
-                    score = document.getLong("score")?.toInt() ?: 0
-                )
-            }
-            leaderboardUpdater(leaderboard)
-        }
-}
