@@ -69,7 +69,6 @@ fun CarbonFootprintScreen(userId: String, modifier: Modifier = Modifier) {
     }
 }
 
-// Function to set up the real-time Firestore listener
 private fun setupRealTimeListener(userId: String, onDataChanged: (Double, Double) -> Unit): ListenerRegistration {
     val firestore = FirebaseFirestore.getInstance()
 

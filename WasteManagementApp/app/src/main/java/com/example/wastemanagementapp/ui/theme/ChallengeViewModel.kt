@@ -69,7 +69,6 @@ class ChallengeViewModel : ViewModel() {
         fetchChallenges()
     }
 
-
     private fun fetchChallenges() {
         viewModelScope.launch(Dispatchers.IO) {
             _loading.value = true

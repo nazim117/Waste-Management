@@ -4,10 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.AlertDialog
@@ -152,6 +150,7 @@ class QuizViewModel: ViewModel(){
         }
     }
 }
+
 @Composable
 fun QuizScreen(viewModel: QuizViewModel, userId: String, firestore: FirebaseFirestore) {
     val questions = viewModel.questions
@@ -163,17 +162,20 @@ fun QuizScreen(viewModel: QuizViewModel, userId: String, firestore: FirebaseFire
         showDialog = true
     }
 
+    // Check if there are questions to display
     if (questions.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text("No quiz questions available.")
         }
     } else {
+        // Display the current quiz question
         QuizQuestion(
             question = questions[viewModel.currentQuestionIndex.value],
             onAnswerSelected = { viewModel.submitAnswer(it, userId, firestore) }
         )
     }
 
+    // Display the dialog when the quiz is finished
     if (showDialog) {
         QuizFinishedDialog(
             score = score,
@@ -186,6 +188,7 @@ fun QuizScreen(viewModel: QuizViewModel, userId: String, firestore: FirebaseFire
     }
 }
 
+
 @Composable
 fun QuizFinishedDialog(
     score: Int,
@@ -195,12 +198,15 @@ fun QuizFinishedDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text(text = "Quiz Finished!")
+            Text(text = "Quiz Finished!", style = MaterialTheme.typography.headlineSmall)
         },
         text = {
             Column {
-                Text(text = "Your score is $score out of $totalQuestions")
-                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Your score is $score out of $totalQuestions",
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
             }
         },
         confirmButton = {
@@ -211,51 +217,72 @@ fun QuizFinishedDialog(
     )
 }
 
+
 @Composable
 fun QuizQuestion(question: QuizQuestion, onAnswerSelected: (Int) -> Unit) {
     var selectedOption by remember { mutableStateOf<Int?>(null) }
 
-    Column(
+    // Use an OutlinedCard for visual separation and a more polished look
+    androidx.compose.material3.OutlinedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFFE8F5E9))
+            .padding(8.dp) // Add padding around the card to keep space from the screen edges
+            .background(Color(0xFFE8F5E9)) // Optional light background
             .padding(16.dp)
     ) {
-        Text(
-            text = question.question,
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-        question.options.forEachIndexed{ index, option ->
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .selectable(
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp) // Padding inside the card for spacing
+        ) {
+            // Display the question
+            Text(
+                text = question.question,
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            // Display answer options with radio buttons
+            question.options.forEachIndexed { index, option ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .selectable(
+                            selected = selectedOption == index,
+                            onClick = { selectedOption = index }
+                        )
+                        .padding(vertical = 8.dp) // Add space between the options
+                ) {
+                    RadioButton(
                         selected = selectedOption == index,
-                        onClick = { selectedOption = index}
+                        onClick = { selectedOption = index },
+                        colors = androidx.compose.material3.RadioButtonDefaults.colors(
+                            selectedColor = MaterialTheme.colorScheme.primary
+                        )
                     )
-                    .padding(vertical = 8.dp)
-            ){
-                RadioButton(
-                    selected = selectedOption == index,
-                    onClick = { selectedOption = index }
-                )
-                Text(
-                    text = option,
-                    style = MaterialTheme.typography.bodyLarge.merge(),
-                    modifier = Modifier.padding(start = 16.dp)
-                )
+                    Text(
+                        text = option,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(start = 16.dp) // Space between radio button and text
+                    )
+                }
             }
-        }
-        Button(
-            onClick = {
-                selectedOption?.let { onAnswerSelected(it)}
-                selectedOption = null
-            },
-            enabled = selectedOption != null,
-            modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
-        ){
-            Text("Submit")
+
+            // Submit button
+            Button(
+                onClick = {
+                    selectedOption?.let { onAnswerSelected(it) }
+                    selectedOption = null // Reset selection after submission
+                },
+                enabled = selectedOption != null, // Disable button until an option is selected
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
+            ) {
+                Text("Submit")
+            }
         }
     }
 }
