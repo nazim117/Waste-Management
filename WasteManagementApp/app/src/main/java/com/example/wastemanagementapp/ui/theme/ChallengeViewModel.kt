@@ -37,34 +37,33 @@ data class Challenge(
 class ChallengeViewModel : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
     private val _challenges = mutableStateListOf<Challenge>()
-    val challenges: List<Challenge> = _challenges
+    private val challenges: List<Challenge> = _challenges
 
     private var _streak = mutableStateOf(0)
-    val streak: Int get() = _streak.value
+    private val streak: Int get() = _streak.value
 
     private var _loading = mutableStateOf(true)
     val loading: Boolean get() = _loading.value
 
     private var _currentChallengeIndex = mutableStateOf(0)
-    val currentChallengeIndex: Int get() = _currentChallengeIndex.value
+    private val currentChallengeIndex: Int get() = _currentChallengeIndex.value
 
     private var _challengesCompleted = mutableStateOf(false)
-    val challengesCompleted: Boolean get() = _challengesCompleted.value
+    private val challengesCompleted: Boolean get() = _challengesCompleted.value
 
     private var _currentChallengeProgress = mutableStateOf(0)
-    val currentChallengeProgress: Int get() = _currentChallengeProgress.value
+    private val currentChallengeProgress: Int get() = _currentChallengeProgress.value
 
     private var _currentChallengeFinished = mutableStateOf(false)
-    val currentChallengeFinished: Boolean get() = _currentChallengeFinished.value
+    private val currentChallengeFinished: Boolean get() = _currentChallengeFinished.value
 
     private var _totalCarbonSavings = mutableStateOf(0.0)
-    val totalCarbonSavings: Double get() = _totalCarbonSavings.value
+    private val totalCarbonSavings: Double get() = _totalCarbonSavings.value
 
     private var _totalMoneySaved = mutableStateOf(0.0)
-    val totalMoneySaved: Double get() = _totalMoneySaved.value
 
     private var _score = mutableStateOf(0)
-    val score: Int get() = _score.value
+    private val score: Int get() = _score.value
 
     init {
         fetchChallenges()
