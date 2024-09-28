@@ -1,3 +1,5 @@
+package com.example.wastemanagementapp.ui.theme
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -6,7 +8,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -16,28 +23,21 @@ import com.google.firebase.firestore.ListenerRegistration
 
 @Composable
 fun CarbonFootprintScreen(userId: String, modifier: Modifier = Modifier) {
-    // State variables to hold the fetched values
     var totalCarbonSavings by remember { mutableStateOf(0.0) }
     var totalMoneySaved by remember { mutableStateOf(0.0) }
-
-    // Remember a snapshot listener registration so we can remove it when the composable leaves the composition
     var snapshotListener by remember { mutableStateOf<ListenerRegistration?>(null) }
 
-    // Use a side effect to register the real-time listener when the composable is first launched
     DisposableEffect(userId) {
-        // Set up the Firestore real-time listener
         snapshotListener = setupRealTimeListener(userId) { carbonSavings, moneySaved ->
             totalCarbonSavings = carbonSavings
             totalMoneySaved = moneySaved
         }
 
-        // Clean up the listener when the composable leaves the composition
         onDispose {
             snapshotListener?.remove()
         }
     }
 
-    // Composable UI
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -47,20 +47,23 @@ fun CarbonFootprintScreen(userId: String, modifier: Modifier = Modifier) {
         Text(
             text = "Your Carbon Footprint Impact:",
             style = MaterialTheme.typography.headlineMedium,
+            color = Color(0xFF2E7D32),
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 16.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = "Money saved")
-                Text(text = "$${totalMoneySaved}")
+                Text(text = "Money Saved", style = MaterialTheme.typography.bodyLarge)
+                Text(text = "$${totalMoneySaved}", style = MaterialTheme.typography.headlineSmall, color = Color(0xFF388E3C))
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = "CO2e Reduced")
-                Text(text = "${totalCarbonSavings} kg CO2e")
+                Text(text = "CO2e Reduced", style = MaterialTheme.typography.bodyLarge)
+                Text(text = "${totalCarbonSavings} kg CO2e", style = MaterialTheme.typography.headlineSmall, color = Color(0xFF66BB6A))
             }
         }
     }

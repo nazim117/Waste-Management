@@ -153,9 +153,8 @@ fun QuizScreen(viewModel: QuizViewModel, userId: String, firestore: FirebaseFire
 
     var showDialog by remember { mutableStateOf(false) }
 
-    if(quizFinished && !showDialog){
+    if (quizFinished && !showDialog) {
         showDialog = true
-        println("Dialog shown")
     }
 
     if (questions.isEmpty()) {
@@ -163,21 +162,19 @@ fun QuizScreen(viewModel: QuizViewModel, userId: String, firestore: FirebaseFire
             Text("No quiz questions available.")
         }
     } else {
-        // Render the quiz UI
         QuizQuestion(
             question = questions[viewModel.currentQuestionIndex.value],
             onAnswerSelected = { viewModel.submitAnswer(it, userId, firestore) }
         )
     }
 
-    if(showDialog){
+    if (showDialog) {
         QuizFinishedDialog(
             score = score,
             totalQuestions = questions.size,
             onDismiss = {
                 showDialog = false
                 viewModel.resetQuizFinished()
-                println("Close button clicked: showdialog = $showDialog")
             },
         )
     }

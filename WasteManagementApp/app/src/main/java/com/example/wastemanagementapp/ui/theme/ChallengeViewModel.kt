@@ -4,10 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
@@ -18,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -190,7 +190,6 @@ class ChallengeViewModel : ViewModel() {
                 )
             }
         }.addOnFailureListener { exception ->
-            // Handle failure
             exception.printStackTrace()
         }
     }
@@ -229,7 +228,7 @@ class ChallengeViewModel : ViewModel() {
                 )
             } else {
                 if (challenges.isNotEmpty()) {
-                    val currentChallenge = challenges[currentChallengeIndex]
+                    val currentChallenge = challenges[viewModel.currentChallengeIndex]
                     Text(
                         text = currentChallenge.challenge,
                         style = MaterialTheme.typography.bodyLarge,
@@ -241,22 +240,27 @@ class ChallengeViewModel : ViewModel() {
                         horizontalArrangement = Arrangement.Center
                     ) {
                         repeat(3) { index ->
-                            if (index < currentChallengeProgress) {
-                                Icon(Icons.Default.Star, contentDescription = "Star", tint = Color.Yellow)
-                            } else {
-                                Icon(Icons.Default.Star, contentDescription = "Star", tint = Color.Gray)
-                            }
+                            Icon(
+                                Icons.Default.Star,
+                                contentDescription = "Star",
+                                tint = if (index < viewModel.currentChallengeProgress) Color.Yellow else Color.Gray
+                            )
                         }
                     }
+
+                    LinearProgressIndicator(
+                        progress = viewModel.currentChallengeProgress / 3f,
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)
+                    )
                 } else {
                     Text("No challenges available.")
                 }
 
                 Button(
-                    onClick = { completeChallengeAction(userId) },
-                    modifier = Modifier.fillMaxWidth()
+                    onClick = { viewModel.completeChallengeAction(userId) },
+                    modifier = Modifier.fillMaxWidth().shadow(4.dp)
                 ) {
-                    if (currentChallengeFinished) {
+                    if (viewModel.currentChallengeFinished) {
                         Text(text = "Next Challenge")
                     } else {
                         Text(text = "Submit")
